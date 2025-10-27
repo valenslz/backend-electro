@@ -10,21 +10,21 @@ class SeguridadUsuario {
 
     static async obtenerPorUsuarioId(usuarioId) {
         try {
-            const result = await pool.query(
-                'SELECT * FROM seguridad_usuario WHERE usuario_id = $1',
+            const [rows] = await pool.query(
+                'SELECT * FROM seguridad_usuario WHERE usuario_id = ?',
                 [usuarioId]
             );
             
-            if (result.rows.length === 0) {
+            if (rows.length === 0) {
                 // Crear registro si no existe
                 await pool.query(
-                    'INSERT INTO seguridad_usuario (usuario_id) VALUES ($1)',
+                    'INSERT INTO seguridad_usuario (usuario_id) VALUES (?)',
                     [usuarioId]
                 );
                 return new SeguridadUsuario(usuarioId);
             }
 
-            const data = result.rows[0];
+            const data = rows[0];
             return new SeguridadUsuario(
                 data.usuario_id,
                 data.intentos_fallidos,
@@ -49,8 +49,8 @@ class SeguridadUsuario {
 
             await pool.query(
                 `UPDATE seguridad_usuario 
-                 SET intentos_fallidos = $1, bloqueado = $2, fecha_desbloqueo = $3 
-                 WHERE usuario_id = $4`,
+                 SET intentos_fallidos = ?, bloqueado = ?, fecha_desbloqueo = ? 
+                 WHERE usuario_id = ?`,
                 [this.intentosFallidos, this.bloqueado, this.fechaDesbloqueo, this.usuarioId]
             );
 
@@ -69,7 +69,7 @@ class SeguridadUsuario {
             await pool.query(
                 `UPDATE seguridad_usuario 
                  SET intentos_fallidos = 0, bloqueado = false, fecha_desbloqueo = NULL 
-                 WHERE usuario_id = $1`,
+                 WHERE usuario_id = ?`,
                 [this.usuarioId]
             );
         } catch (error) {
