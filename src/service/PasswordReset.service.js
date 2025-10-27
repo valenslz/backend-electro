@@ -32,17 +32,17 @@ class PasswordResetService {
             console.log("🔍 Buscando usuario con email:", email);
             
             // Verificar si el usuario existe
-            const usuarioResult = await pool.query(
-                'SELECT id, correo, nombre FROM usuarios WHERE correo = $1',
+            const [usuarioResult] = await pool.query(
+                'SELECT id, correo, nombre FROM usuarios WHERE correo = ?',
                 [email]
             );
 
-            if (usuarioResult.rows.length === 0) {
+            if (usuarioResult.length === 0) {
                 console.log("❌ Usuario no encontrado");
                 throw new Error("No existe una cuenta con este correo electrónico");
             }
 
-            const usuario = usuarioResult.rows[0];
+            const usuario = usuarioResult[0];
             console.log("✅ Usuario encontrado:", usuario.nombre);
 
             // Generar token y expiración
@@ -52,8 +52,8 @@ class PasswordResetService {
             // Guardar token en la base de datos
             await pool.query(
                 `UPDATE usuarios 
-                 SET token_reset_password = $1, token_expiracion = $2 
-                 WHERE id = $3`,
+                 SET token_reset_password = ?, token_expiracion = ? 
+                 WHERE id = ?`,
                 [token, expiracion, usuario.id]
             );
 
@@ -80,18 +80,18 @@ class PasswordResetService {
         try {
             console.log("🔍 Verificando token:", token);
             
-            const result = await pool.query(
+            const [result] = await pool.query(
                 `SELECT id, correo, nombre, token_expiracion 
                  FROM usuarios 
-                 WHERE token_reset_password = $1`,
+                 WHERE token_reset_password = ?`,
                 [token]
             );
 
-            if (result.rows.length === 0) {
+            if (result.length === 0) {
                 throw new Error("Token inválido o expirado");
             }
 
-            const usuario = result.rows[0];
+            const usuario = result[0];
 
             // Verificar expiración
             if (new Date() > new Date(usuario.token_expiracion)) {
@@ -136,8 +136,8 @@ class PasswordResetService {
             // Actualizar contraseña y limpiar token
             await pool.query(
                 `UPDATE usuarios 
-                 SET contraseña = $1, token_reset_password = NULL, token_expiracion = NULL 
-                 WHERE id = $2`,
+                 SET contraseña = ?, token_reset_password = NULL, token_expiracion = NULL 
+                 WHERE id = ?`,
                 [hashedPassword, tokenValido.usuarioId]
             );
 
@@ -159,7 +159,7 @@ class PasswordResetService {
         await pool.query(
             `UPDATE usuarios 
              SET token_reset_password = NULL, token_expiracion = NULL 
-             WHERE id = $1`,
+             WHERE id = ?`,
             [usuarioId]
         );
     }
