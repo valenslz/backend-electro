@@ -1,0 +1,25 @@
+{
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.2.3",
+    "expres": "^0.0.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mercadopago": "^2.9.0",
+    "mysql2": "^3.15.3",
+    "nodemailer": "^7.0.10",
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
+  }
+}

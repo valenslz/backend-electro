@@ -1,0 +1,16 @@
+const express = require("express");
+const AuthController = require("../controller/AuthController");
+const VerificacionController = require("../controller/VerificacionController");
+const PasswordResetController = require("../controller/PasswordResetController");
+const router = express.Router();
+router.post("/registrar", AuthController.registrar);
+router.post("/login", AuthController.login);
+router.get("/verificar", AuthController.verificarToken);
+router.get("/clientes", AuthController.obtenerClientes);
+router.get("/administradores", AuthController.obtenerAdministradores);
+router.post("/verificar-codigo", VerificacionController.verificarCodigo);
+router.post("/reenviar-codigo", VerificacionController.reenviarCodigo);
+router.post("/olvide-password", PasswordResetController.solicitarRecuperacion);
+router.post("/verificar-token-reset", PasswordResetController.verificarToken);
+router.post("/restablecer-password", PasswordResetController.restablecerPassword);
+module.exports = router;
