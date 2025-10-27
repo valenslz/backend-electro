@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const pool = require('../../config/bd');
+const pool = require('../../config/bd'); // conexión con mysql2/promise
 
 class Usuario {
     constructor(id, email, password, nombre, tipoUsuario) {
@@ -13,20 +13,20 @@ class Usuario {
     static async buscarPorEmail(email) {
         try {
             console.log("🔍 Buscando usuario por email:", email);
-            const result = await pool.query(
-                'SELECT * FROM usuarios WHERE correo = $1',
+            const [rows] = await pool.query(
+                'SELECT * FROM usuarios WHERE correo = ?',
                 [email]
             );
             
-            console.log("📊 Resultado de búsqueda:", result.rows.length > 0 ? "Encontrado" : "No encontrado");
+            console.log("📊 Resultado de búsqueda:", rows.length > 0 ? "Encontrado" : "No encontrado");
             
-            if (result.rows[0]) {
+            if (rows[0]) {
                 const usuario = new Usuario(
-                    result.rows[0].id,
-                    result.rows[0].correo,
-                    result.rows[0].contraseña,
-                    result.rows[0].nombre,
-                    result.rows[0].tipo_usuario
+                    rows[0].id,
+                    rows[0].correo,
+                    rows[0].contraseña,
+                    rows[0].nombre,
+                    rows[0].tipo_usuario
                 );
                 console.log("👤 Usuario construído:", {
                     id: usuario.id,
@@ -51,31 +51,28 @@ class Usuario {
             const hashedPassword = await bcrypt.hash(password, 10);
             console.log("✅ Contraseña hasheada");
             
-            const result = await pool.query(
+            const [result] = await pool.query(
                 `INSERT INTO usuarios (correo, contraseña, nombre, tipo_usuario) 
-                 VALUES ($1, $2, $3, $4) RETURNING *`,
+                 VALUES (?, ?, ?, ?)`,
                 [email, hashedPassword, nombre, tipoUsuario]
             );
-            
-            const usuario = result.rows[0];
-            console.log("✅ Usuario creado en BD:", {
-                id: usuario.id,
-                email: usuario.correo,
-                nombre: usuario.nombre
-            });
-            
+
+            const usuarioId = result.insertId;
+
+            console.log("✅ Usuario creado en BD con ID:", usuarioId);
+
             await pool.query(
-                'INSERT INTO seguridad_usuario (usuario_id) VALUES ($1)',
-                [usuario.id]
+                'INSERT INTO seguridad_usuario (usuario_id) VALUES (?)',
+                [usuarioId]
             );
             console.log("✅ Registro de seguridad creado");
             
             return new Usuario(
-                usuario.id,
-                usuario.correo,
-                usuario.contraseña,
-                usuario.nombre,
-                usuario.tipo_usuario
+                usuarioId,
+                email,
+                hashedPassword,
+                nombre,
+                tipoUsuario
             );
         } catch (error) {
             console.error('❌ Error al crear usuario:', error);
