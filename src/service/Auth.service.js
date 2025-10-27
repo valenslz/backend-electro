@@ -1,7 +1,7 @@
     const jwt = require("jsonwebtoken");
     const ENV = require("../config/ENV");
-    const Usuario = require("../Models/Entidades/Usuario");
-    const SeguridadUsuario = require("../Models/Entidades/SeguridadUsuario");
+    const Usuario = require("../models/Entidades/Usuario");
+    const SeguridadUsuario = require("../models/Entidades/SeguridadUsuario");
     const EmailService = require("./Email.service");
     const pool = require("../config/bd");
     const CryptoJS = require("crypto-js");
